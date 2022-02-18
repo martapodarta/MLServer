@@ -1,11 +1,13 @@
 import uvicorn
 
 from ..settings import Settings
-from ..handlers import DataPlane, ModelRepositoryHandlers, get_custom_handlers
+from ..handlers import DataPlane, ModelRepositoryHandlers, get_custom_handlers, get_schema
 from ..model import MLModel
 
 from .utils import matches
 from .app import create_app
+from fastapi.openapi.utils import get_openapi
+from ..logging import logger
 
 
 class _NoSignalServer(uvicorn.Server):
@@ -28,6 +30,24 @@ class RESTServer:
             data_plane=self._data_plane,
             model_repository_handlers=self._model_repository_handlers,
         )
+        self._app.openapi = self.custom_openapi
+
+    def custom_openapi(self):
+        if self._app.openapi_schema:
+            return self._app.openapi_schema
+        openapi_schema = get_openapi(title="Custom title", version="1.0.1", description="This is a very custom OpenAPI schema", routes=self._app.routes, )
+        descriptions=get_schema()
+        for key, value in descriptions.items():
+            openapi_schema[key] = 'test'
+            print(key)
+
+        #print(get_schema())
+        #openapi_schema = get_schema()
+        #logger.info("openapi_schema")
+        #print(openapi_schema)
+
+        self._app.openapi_schema = openapi_schema
+        return self._app.openapi_schema
 
     async def add_custom_handlers(self, model: MLModel):
         handlers = get_custom_handlers(model)
