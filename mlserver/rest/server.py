@@ -33,18 +33,19 @@ class RESTServer:
         self._app.openapi = self.custom_openapi
 
     def custom_openapi(self):
+        endpoints = get_schema()
         if self._app.openapi_schema:
             return self._app.openapi_schema
-        openapi_schema = get_openapi(title="Custom title", version="1.0.1", description="This is a very custom OpenAPI schema", routes=self._app.routes, )
-        descriptions=get_schema()
-        for key, value in descriptions.items():
-            openapi_schema[key] = 'test'
-            print(key)
-
-        #print(get_schema())
-        #openapi_schema = get_schema()
-        #logger.info("openapi_schema")
-        #print(openapi_schema)
+        openapi_schema = get_openapi(title="MLServer APIs", version="1.0", description="", routes=self._app.routes, )
+        for path in openapi_schema['paths']:
+            for i in range(len(endpoints)):
+                endpoint = endpoints[i]
+                if path == endpoint["path"]:
+                    operation = endpoint["operation"]
+                    desc = endpoint["desc"]
+                    summary = endpoint["summary"]
+                    openapi_schema['paths'][path][operation]['description'] = desc
+                    openapi_schema['paths'][path][operation]['summary'] = summary
 
         self._app.openapi_schema = openapi_schema
         return self._app.openapi_schema

@@ -2,29 +2,31 @@ import json
 import yaml
 
 def get_schema():
-    # Opening JSON file
-    #f = open('/Users/martamazur/Documents/aia/MLServer/openapi/target.json')
 
     with open('/Users/martamazur/Documents/martapodarta/MLServer/openapi/dataplane.yaml') as f:
-        schema = yaml.load(f)
-        #print(schema)
-        data = {}
-        for path in schema['paths']:  # for key, value in paths.iteritems():
-            #print(path)  # get API paths
-            for operation in schema['paths'][path]:
-                #print(operation)
-                if operation not in ["parameters"]:
-                    desc = schema['paths'][path][operation]['description']
-                    summary= schema['paths'][path][operation]['summary']
-                    #print(desc)
-                    #print(summary)
+        schema = yaml.load(f, Loader=yaml.FullLoader)
 
-                    data[f"'paths']['{path}']['{operation}']['description'"] = desc
-        #print(data)
-        keys = list(data.keys())
-        #print(keys)
+        endpoints = []
 
-        return data
+        # get API paths
+        for path in schema['paths']:
+            path_node = schema['paths'][path]
+            # operations supported by openapi 3.0
+            operations = ["get", "post", "put", "patch", "delete", "head", "options", "trace"]
+            for node in path_node:
+                if node in operations:
+                    endpoint = {}
+                    operation = node
+                    description = schema['paths'][path][operation]['description']
+                    summary = schema['paths'][path][operation]['summary']
+                    endpoint["path"] = path
+                    endpoint["operation"] = operation
+                    endpoint["desc"] = description
+                    endpoint["summary"] = summary
+                    endpoints.append(endpoint)
 
-        #keys = list(data.keys())
-        #print(keys)
+        #print(endpoints)
+
+        return endpoints
+
+
