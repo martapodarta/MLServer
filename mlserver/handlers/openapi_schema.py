@@ -1,9 +1,10 @@
-import json
 import yaml
+import re
+
 
 def get_schema():
 
-    with open('/Users/martamazur/Documents/martapodarta/MLServer/openapi/dataplane.yaml') as f:
+    with open('openapi/dataplane.yaml') as f:
         schema = yaml.load(f, Loader=yaml.FullLoader)
 
         endpoints = []
@@ -19,14 +20,26 @@ def get_schema():
                     operation = node
                     description = schema['paths'][path][operation]['description']
                     summary = schema['paths'][path][operation]['summary']
-                    endpoint["path"] = path
+                    endpoint["path"] = normalize_paths(path)
+                    print(endpoint["path"])
                     endpoint["operation"] = operation
                     endpoint["desc"] = description
                     endpoint["summary"] = summary
                     endpoints.append(endpoint)
 
-        #print(endpoints)
-
         return endpoints
 
 
+def normalize_paths(path: str):
+
+    path_elements = [{"to_replace": r'\$\{MODEL_NAME\}',
+                      "replacement": "{model_name}"},
+                     {"to_replace": r'\$\{MODEL_VERSION\}',
+                      "replacement": "{model_version}"},
+                     {"to_replace": r'/v2/$',
+                      "replacement": "/v2"},
+                                        ]
+    for element in path_elements:
+        path = re.sub(element["to_replace"], element["replacement"], path)
+
+    return path
