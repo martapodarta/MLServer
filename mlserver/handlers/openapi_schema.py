@@ -43,3 +43,4 @@ def normalize_paths(path: str):
         path = re.sub(element["to_replace"], element["replacement"], path)
 
     return path
+
