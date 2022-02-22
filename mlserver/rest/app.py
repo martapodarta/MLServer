@@ -11,7 +11,8 @@ from .responses import Response
 from .errors import _EXCEPTION_HANDLERS
 
 from ..settings import Settings
-from ..handlers import DataPlane, ModelRepositoryHandlers
+from ..handlers import DataPlane, ModelRepositoryHandlers, get_custom_handlers, get_schema
+from fastapi.openapi.utils import get_openapi
 
 
 class APIRoute(FastAPIRoute):
@@ -128,4 +129,30 @@ def create_app(
         )
         app.add_route(settings.metrics_endpoint, handle_metrics)
 
+        custom_openapi(app)
+        #new_schema = custom_openapi(app)
+        #app.openapi = new_schema
+        #print(custom_openapi(app))
+
     return app
+
+
+def custom_openapi(app):
+    endpoints = get_schema()
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(title="MLServer APIs", version="1.0", description="", routes=app.routes, )
+
+    for path in openapi_schema['paths']:
+        for i in range(len(endpoints)):
+            endpoint = endpoints[i]
+            # only return a description if an api(path) is defined in an openapi schema
+            if path == endpoint["path"]:
+                operation = endpoint["operation"]
+                desc = endpoint["desc"]
+                summary = endpoint["summary"]
+                openapi_schema['paths'][path][operation]['description'] = desc
+                openapi_schema['paths'][path][operation]['summary'] = summary
+
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
