@@ -4,7 +4,7 @@ import re
 
 def get_schema():
 
-    with open('openapi/dataplane.yaml') as f:
+    with open('api_docs/openapi.yaml') as f:
         schema = yaml.load(f, Loader=yaml.FullLoader)
 
         endpoints = []
