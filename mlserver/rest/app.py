@@ -130,15 +130,13 @@ def create_app(
         app.add_route(settings.metrics_endpoint, handle_metrics)
 
         custom_openapi(app)
-        #new_schema = custom_openapi(app)
-        #app.openapi = new_schema
-        #print(custom_openapi(app))
 
     return app
 
 
 def custom_openapi(app):
     endpoints = get_schema()
+    get_schema()
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(title="MLServer APIs", version="1.0", description="", routes=app.routes, )
@@ -146,14 +144,13 @@ def custom_openapi(app):
     for path in openapi_schema['paths']:
         for i in range(len(endpoints)):
             endpoint = endpoints[i]
-            # only return a description if an api(path) is defined in an openapi schema
+            # only return a description if an api(path) is defined in an openapi schema returned by FastApi
             if path == endpoint["path"]:
                 operation = endpoint["operation"]
-                desc = endpoint["desc"]
-                summary = endpoint["summary"]
-                openapi_schema['paths'][path][operation]['description'] = desc
-                openapi_schema['paths'][path][operation]['summary'] = summary
+                if 'desc' in endpoint:
+                    openapi_schema['paths'][path][operation]['description'] = endpoint["desc"]
+                if 'summary' in endpoint:
+                    openapi_schema['paths'][path][operation]['summary'] = endpoint["summary"]
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema
-
