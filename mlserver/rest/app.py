@@ -4,15 +4,15 @@ from fastapi.responses import Response as FastAPIResponse
 from fastapi.routing import APIRoute as FastAPIRoute
 from fastapi.middleware.cors import CORSMiddleware
 from starlette_exporter import PrometheusMiddleware, handle_metrics
-
+from fastapi.openapi.utils import get_openapi
 from .endpoints import Endpoints, ModelRepositoryEndpoints
 from .requests import Request
 from .responses import Response
 from .errors import _EXCEPTION_HANDLERS
 
 from ..settings import Settings
-from ..handlers import DataPlane, ModelRepositoryHandlers, get_custom_handlers, get_schema
-from fastapi.openapi.utils import get_openapi
+from ..handlers import DataPlane, ModelRepositoryHandlers, get_custom_handlers, process_schema
+
 
 
 class APIRoute(FastAPIRoute):
@@ -135,8 +135,8 @@ def create_app(
 
 
 def custom_openapi(app):
-    endpoints = get_schema()
-    get_schema()
+    endpoints = process_schema()
+    process_schema()
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(title="MLServer APIs", version="1.0", description="", routes=app.routes, )
