@@ -1,9 +1,15 @@
 import re
+from typing import List, Dict
 import yaml
 
 
-def get_schema():
 
+def process_schema() -> List[Dict[str, str]]:
+    """
+    Method used to extract API paths and corresponding descriptions and summaries.
+    Returns list of object, where each object includes an API path, operation and
+    if available summary and a description of an API
+    """
     schema = merge_schemas('openapi/dataplane.yaml', 'openapi/model_repository.yaml')
     endpoints = []
 
@@ -27,7 +33,9 @@ def get_schema():
 
 
 def normalize_paths(path: str):
-
+    """
+        Method used to normalize API paths to match MLServer API paths
+    """
     path_elements = [{"to_replace": r'\$\{MODEL_NAME\}',
                       "replacement": "{model_name}"},
                      {"to_replace": r'\$\{MODEL_VERSION\}',
