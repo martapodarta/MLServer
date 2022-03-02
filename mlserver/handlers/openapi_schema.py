@@ -4,28 +4,28 @@ import yaml
 
 
 
-def process_schema() -> List[Dict[str, str]]:
+def process_schema(input_schema) -> List[Dict[str, str]]:
     """
     Method used to extract API paths and corresponding descriptions and summaries.
     Returns list of object, where each object includes an API path, operation and
     if available summary and a description of an API
     """
-    schema = merge_schemas('openapi/dataplane.yaml', 'openapi/model_repository.yaml')
+
     endpoints = []
 
     # get API paths
-    for path in schema['paths']:
-        path_node = schema['paths'][path]
+    for path in input_schema['paths']:
+        path_node = input_schema['paths'][path]
         # operations supported by openapi 3.0
         operations = ["get", "post", "put", "patch", "delete", "head", "options", "trace"]
         for operation in path_node:
             if operation in operations:
                 endpoint = {"path": normalize_paths(path), "operation": operation}
-                print(endpoint["path"])
-                if 'description' in schema['paths'][path][operation]:
-                    endpoint["desc"] = schema['paths'][path][operation]['description']
-                if 'summary' in schema['paths'][path][operation]:
-                    endpoint["summary"] = schema['paths'][path][operation]['summary']
+                #print(endpoint["path"])
+                if 'description' in input_schema['paths'][path][operation]:
+                    endpoint["desc"] = input_schema['paths'][path][operation]['description']
+                if 'summary' in input_schema['paths'][path][operation]:
+                    endpoint["summary"] = input_schema['paths'][path][operation]['summary']
 
                 endpoints.append(endpoint)
 
@@ -60,7 +60,5 @@ def merge_schemas(path_1, path_2):
     merged_schema['paths'].update(schema_2.get('paths', {}))
     merged_schema['components']['schemas'].update(schema_2['components'].get('schemas', {}))
 
-    with open('openapi/toyaml.yaml', 'w', encoding='utf-8') as file:
-        yaml.dump(merged_schema, file, sort_keys=False)
-
     return merged_schema
+

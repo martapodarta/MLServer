@@ -9,6 +9,8 @@ from mlserver.parallel import load_inference_pool, unload_inference_pool
 from mlserver.batching import load_batching
 from mlserver.rest import RESTServer
 from mlserver import Settings
+from mlserver.handlers import merge_schemas
+from mlserver.rest.app import custom_openapi
 
 from ..fixtures import SumModel
 
@@ -47,3 +49,10 @@ def rest_app(rest_server: RESTServer) -> FastAPI:
 @pytest.fixture
 def rest_client(rest_app: FastAPI) -> TestClient:
     return TestClient(rest_app)
+
+
+@pytest.fixture
+def updated_schema(rest_app):
+    input_schema = merge_schemas("tests/testdata/open_api/dataplane.yaml", "tests/testdata/open_api/model_repository.yaml")
+    updated_schema = custom_openapi(rest_app, input_schema)
+    return updated_schema

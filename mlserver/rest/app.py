@@ -11,7 +11,7 @@ from .responses import Response
 from .errors import _EXCEPTION_HANDLERS
 
 from ..settings import Settings
-from ..handlers import DataPlane, ModelRepositoryHandlers, get_custom_handlers, process_schema
+from ..handlers import DataPlane, ModelRepositoryHandlers, get_custom_handlers, process_schema, merge_schemas
 
 
 
@@ -129,17 +129,18 @@ def create_app(
         )
         app.add_route(settings.metrics_endpoint, handle_metrics)
 
-        custom_openapi(app)
+    # if openapi schema does not exist then generate it
+    if not app.openapi_schema:
+        input_schema = merge_schemas('openapi/dataplane.yaml', 'openapi/model_repository.yaml')
+        custom_openapi(app, input_schema)
 
     return app
 
 
-def custom_openapi(app):
-    endpoints = process_schema()
-    process_schema()
-    if app.openapi_schema:
-        return app.openapi_schema
-    openapi_schema = get_openapi(title="MLServer APIs", version="1.0", description="", routes=app.routes, )
+def custom_openapi(app, input_schema):
+
+    endpoints = process_schema(input_schema)
+    openapi_schema = get_openapi(title="", version="0.1.0", description="", routes=app.routes, )
 
     for path in openapi_schema['paths']:
         for i in range(len(endpoints)):
