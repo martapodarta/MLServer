@@ -9,7 +9,7 @@ servers: []
 paths:
   /v2/health/live:
     get:
-      summary: Server Live
+      summary: Server is live
       responses:
         '200':
           description: OK
