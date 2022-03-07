@@ -60,4 +60,3 @@ class RESTServer:
 
     async def stop(self):
         self._server.handle_exit(sig=None, frame=None)
-
