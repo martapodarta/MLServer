@@ -72,7 +72,4 @@ def merge_schemas(path_1: str, path_2: str) -> Dict[str, str]:
     merged_schema['paths'].update(schema_2['paths'])
     merged_schema['components']['schemas'].update(schema_2['components']['schemas'])
 
-    with open('openapi/toyaml.yaml', 'w', encoding='utf-8') as file:
-        yaml.dump(merged_schema, file, sort_keys=False)
-
     return merged_schema
