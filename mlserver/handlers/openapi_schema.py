@@ -1,3 +1,7 @@
+"""
+This module processes openapi schema yaml files in order
+to retrieve descriptions and summaries of endpoints
+"""
 import re
 from typing import List, Dict
 import yaml
@@ -17,14 +21,18 @@ def process_schema(input_schema: Dict) -> List[Dict[str, str]]:
     for path in input_schema['paths']:
         path_node = input_schema['paths'][path]
         # operations supported by openapi 3.0
-        operations = ["get", "post", "put", "patch", "delete", "head", "options", "trace"]
+        operations = ["get", "post", "put", "patch",
+                      "delete", "head", "options", "trace"]
         for operation in path_node:
             if operation in operations:
-                endpoint = {"path": normalize_paths(path), "operation": operation}
+                endpoint = {"path": normalize_paths(path),
+                            "operation": operation}
                 if 'description' in input_schema['paths'][path][operation]:
-                    endpoint["desc"] = input_schema['paths'][path][operation]['description']
+                    endpoint["desc"] = \
+                        input_schema['paths'][path][operation]['description']
                 if 'summary' in input_schema['paths'][path][operation]:
-                    endpoint["summary"] = input_schema['paths'][path][operation]['summary']
+                    endpoint["summary"] = \
+                        input_schema['paths'][path][operation]['summary']
 
                 endpoints.append(endpoint)
 
