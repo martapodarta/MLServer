@@ -165,6 +165,7 @@ def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
                 openapi_schema['components']['schemas'][input_schema_key] = input_schema_value
 
     #for key, value in openapi_schema['components']['schemas'].items():
+
         #print(key)
         #print(value)
     #openapi_schema['components']['schemas'] = input_schema['components']['schemas']
