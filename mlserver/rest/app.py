@@ -11,7 +11,7 @@ from .requests import Request
 from .responses import Response
 from .errors import _EXCEPTION_HANDLERS
 from ..settings import Settings
-from ..handlers import DataPlane, ModelRepositoryHandlers, process_schema, merge_schemas
+from ..handlers import DataPlane, ModelRepositoryHandlers, merge_schemas
 
 
 class APIRoute(FastAPIRoute):
@@ -129,10 +129,10 @@ def create_app(
         app.add_route(settings.metrics_endpoint, handle_metrics)
 
     # if openapi schema does not exist then generate it
-    if not app.openapi_schema:
-        input_schema = merge_schemas('openapi/dataplane.yaml',
-                                     'openapi/model_repository.yaml')
-        custom_openapi(app, input_schema)
+    #if not app.openapi_schema:
+       # input_schema = merge_schemas('openapi/dataplane.yaml',
+         #                            'openapi/model_repository.yaml')
+        #custom_openapi(app, input_schema)
 
     return app
 
@@ -146,23 +146,27 @@ def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
     """
 
     # get summaries and descriptions for endpoints defined in input schema
-    endpoints = process_schema(input_schema)
+
     # generate openapi schema basing on endpoints defined in the project
     openapi_schema = get_openapi(title="MLServer APIs", version="0.1.0",
-                                 description="", routes=app.routes, )
+                                 description="", openapi_version="3.0.0", routes=app.routes, )
     # for each api path in a project, if a path matches a path extracted from input schema
     # add a description and a summary
     for path in openapi_schema['paths']:
-        for i in range(len(endpoints)):
-            endpoint = endpoints[i]
-            if path == endpoint["path"]:
-                operation = endpoint["operation"]
-                if 'desc' in endpoint:
-                    openapi_schema['paths'][path][operation]['description'] = \
-                        endpoint["desc"]
-                if 'summary' in endpoint:
-                    openapi_schema['paths'][path][operation]['summary'] = \
-                        endpoint["summary"]
+        for input_schema_path in input_schema['paths']:
+            if path == input_schema_path:
+                openapi_schema['paths'][path] = input_schema['paths'][input_schema_path]
 
+    for input_schema_key, input_schema_value in input_schema['components']['schemas'].items():
+        for schema_node, _ in list(openapi_schema['components']['schemas'].items()):
+            if input_schema_key == schema_node:
+                openapi_schema['components']['schemas'][schema_node] = input_schema_value
+            else:
+                openapi_schema['components']['schemas'][input_schema_key] = input_schema_value
+
+    #for key, value in openapi_schema['components']['schemas'].items():
+        #print(key)
+        #print(value)
+    #openapi_schema['components']['schemas'] = input_schema['components']['schemas']
     app.openapi_schema = openapi_schema
     return app.openapi_schema
