@@ -150,16 +150,11 @@ def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
                 openapi_schema['paths'][path] = input_schema['paths'][input_schema_path]
 
     for input_schema_key, input_schema_value in input_schema['components']['schemas'].items():
-        for schema_node, _ in list(openapi_schema['components']['schemas'].items()):
-            if input_schema_key == schema_node:
-                openapi_schema['components']['schemas'][schema_node] = input_schema_value
+        for openapi_schema_key, _ in list(openapi_schema['components']['schemas'].items()):
+            if input_schema_key == openapi_schema_key:
+                openapi_schema['components']['schemas'][openapi_schema_key] = input_schema_value
             else:
                 openapi_schema['components']['schemas'][input_schema_key] = input_schema_value
 
-    #for key, value in openapi_schema['components']['schemas'].items():
-
-        #print(key)
-        #print(value)
-    #openapi_schema['components']['schemas'] = input_schema['components']['schemas']
     app.openapi_schema = openapi_schema
     return app.openapi_schema
