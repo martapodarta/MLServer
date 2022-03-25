@@ -8,45 +8,35 @@ import yaml
 import json
 
 
-def normalize_schema(schema: Dict):
+def normalize_schema(openapi_schema: Dict):
 
     path_elements = [{"to_replace": r'\$\{MODEL_NAME\}', "replacement": "{model_name}"},
                      {"to_replace": r'\$\{MODEL_VERSION\}', "replacement": "{model_version}"},
                      {"to_replace": r'/v2/$', "replacement": "/v2"}]
-    # normalize paths
+
+    # normalize paths and path parameters names
     for element in path_elements:
-        for path in list(schema['paths'].keys()):
-            if 'parameters' in schema['paths'][path]:
-                #for i in schema['paths'][path]['parameters']:
-                print(schema['paths'][path]['parameters'])
-            #path = re.sub(element["to_replace"], element["replacement"], path
-            schema['paths'][re.sub(element["to_replace"], element["replacement"], path)] = schema['paths'].pop(path)
-   # print(schema['paths'][path]['parameters'])
+        for path in list(openapi_schema['paths'].keys()):
+            if 'parameters' in openapi_schema['paths'][path]:
+                for parameter in openapi_schema['paths'][path]['parameters']:
+                    parameter['name'] = parameter['name'].lower()
+                    print(parameter['name'])
+            openapi_schema['paths'][re.sub(element["to_replace"], element["replacement"], path)] = openapi_schema['paths'].pop(path)
 
-
-    # normalize schema keys
+    # normalize schema objects names and titles under components node
     schemas = {}
-    for schema_comp in list(schema['components']['schemas'].keys()):
+    for schema_object in list(openapi_schema['components']['schemas'].keys()):
+        normalized_schema_name = schema_object.title().replace("_", "")
+        openapi_schema['components']['schemas'][normalized_schema_name] = openapi_schema['components']['schemas'].pop(schema_object)
+        openapi_schema['components']['schemas'][normalized_schema_name]['title'] = normalized_schema_name
+        schemas[normalized_schema_name] = schema_object
 
-        #schema['components']['schemas'][schema_comp.title().replace("_", "")] = schema['components']['schemas'][schema_comp].pop(schema_comp)
-        key = schema_comp.title().replace("_", "")
-        schemas[key] = schema_comp
-        schema['components']['schemas'][key] = schema['components']['schemas'].pop(schema_comp)
-        schema['components']['schemas'][key]['title'] = key
-
-
-    new_schema = json.dumps(schema)
-
+    # normalize schema #ref elements across whole document
+    openapi_schema = json.dumps(openapi_schema)
     for key, value in schemas.items():
-        to_replace = '#/components/schemas/' + value
-        replacement = '#/components/schemas/' + key
+        openapi_schema = openapi_schema.replace('#/components/schemas/' + value, '#/components/schemas/' + key)
 
-        new_schema = new_schema.replace(to_replace, replacement)
-
-   # print("inside normalize")
-   # print(new_schema)
-
-    return new_schema
+    return json.loads(openapi_schema)
 
 
 
@@ -59,17 +49,11 @@ def merge_schemas(path_1: str, path_2: str) -> Dict[str, str]:
     #TODO handle normalization here
     with open(path_1) as file:
         schema_1 = yaml.load(file, Loader=yaml.FullLoader)
-    schema_1 = json.loads(normalize_schema(schema_1))
-    #print("inside merge1")
-    #print(schema_1)
+    schema_1 = normalize_schema(schema_1)
 
     with open(path_2) as file:
         schema_2 = yaml.load(file, Loader=yaml.FullLoader)
-    schema_2 = json.loads(normalize_schema(schema_2))
-    #print("inside merge2")
-    #print(schema_2)
-
-
+    schema_2 = normalize_schema(schema_2)
 
     merged_schema = schema_1.copy()
     merged_schema['paths'].update(schema_2['paths'])
