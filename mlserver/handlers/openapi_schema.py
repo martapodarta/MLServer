@@ -3,7 +3,7 @@ This module processes openapi schema yaml files in order
 to retrieve descriptions and summaries of endpoints
 """
 import re
-from typing import List, Dict
+from typing import Dict
 import yaml
 import json
 
@@ -20,7 +20,6 @@ def normalize_schema(openapi_schema: Dict):
             if 'parameters' in openapi_schema['paths'][path]:
                 for parameter in openapi_schema['paths'][path]['parameters']:
                     parameter['name'] = parameter['name'].lower()
-                    print(parameter['name'])
             openapi_schema['paths'][re.sub(element["to_replace"], element["replacement"], path)] = openapi_schema['paths'].pop(path)
 
     # normalize schema objects names and titles under components node
@@ -31,7 +30,7 @@ def normalize_schema(openapi_schema: Dict):
         openapi_schema['components']['schemas'][normalized_schema_name]['title'] = normalized_schema_name
         schemas[normalized_schema_name] = schema_object
 
-    # normalize schema #ref elements across whole document
+    # normalize schema #ref fields across whole document
     openapi_schema = json.dumps(openapi_schema)
     for key, value in schemas.items():
         openapi_schema = openapi_schema.replace('#/components/schemas/' + value, '#/components/schemas/' + key)
