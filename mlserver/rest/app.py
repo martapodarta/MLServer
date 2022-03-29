@@ -140,14 +140,31 @@ def create_app(
 def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
     """
     """
+    validation_error = {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
 
     openapi_schema = get_openapi(title=input_schema['info']['title'], version=input_schema['info']['version'],
                                  description="", openapi_version=input_schema['openapi'], routes=app.routes, )
 
     for path in openapi_schema['paths']:
         for input_schema_path in input_schema['paths']:
+
             if path == input_schema_path:
                 openapi_schema['paths'][path] = input_schema['paths'][input_schema_path]
+
+                # validation error
+                if set(['parameters', 'get']) == set(openapi_schema['paths'][path].keys()):
+                    openapi_schema['paths'][path]['get']['responses']['422'] = validation_error
+                elif 'post' in openapi_schema['paths'][path].keys():
+                    openapi_schema['paths'][path]['post']['responses']['422'] = validation_error
 
     for input_schema_key, input_schema_value in input_schema['components']['schemas'].items():
         for openapi_schema_key, _ in list(openapi_schema['components']['schemas'].items()):

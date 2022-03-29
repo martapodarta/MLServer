@@ -38,7 +38,6 @@ def normalize_schema(openapi_schema: Dict):
     return json.loads(openapi_schema)
 
 
-
 def merge_schemas(path_1: str, path_2: str) -> Dict[str, str]:
     """
         Method used to merge API paths and schemas of two openapi yaml files.
