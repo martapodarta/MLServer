@@ -11,7 +11,7 @@ from .requests import Request
 from .responses import Response
 from .errors import _EXCEPTION_HANDLERS
 from ..settings import Settings
-from ..handlers import DataPlane, ModelRepositoryHandlers, merge_schemas
+from ..handlers import DataPlane, ModelRepositoryHandlers
 
 
 class APIRoute(FastAPIRoute):
@@ -128,17 +128,14 @@ def create_app(
         )
         app.add_route(settings.metrics_endpoint, handle_metrics)
 
-    # if openapi schema does not exist then generate it
-    #if not app.openapi_schema:
-       # input_schema = merge_schemas('openapi/dataplane.yaml',
-         #                            'openapi/model_repository.yaml')
-        #custom_openapi(app, input_schema)
-
     return app
 
 
 def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
     """
+    Method used to extend openapi schema with the contents of dataplane.yaml and
+    model_repository.yaml files. The method takes in two parameters instance of FastAPI
+    and input schema dictionary from which contents are extracted
     """
     validation_error = {
             "description": "Validation Error",
@@ -151,8 +148,10 @@ def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
             }
           }
 
-    openapi_schema = get_openapi(title=input_schema['info']['title'], version=input_schema['info']['version'],
-                                 description="", openapi_version=input_schema['openapi'], routes=app.routes, )
+    openapi_schema = get_openapi(title=input_schema['info']['title'],
+                                 version=input_schema['info']['version'],
+                                 description="", openapi_version='3.0.0',
+                                 routes=app.routes, )
 
     for path in openapi_schema['paths']:
         for input_schema_path in input_schema['paths']:
@@ -161,17 +160,24 @@ def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
                 openapi_schema['paths'][path] = input_schema['paths'][input_schema_path]
 
                 # validation error
-                if set(['parameters', 'get']) == set(openapi_schema['paths'][path].keys()):
-                    openapi_schema['paths'][path]['get']['responses']['422'] = validation_error
+                if set(['parameters', 'get']) == \
+                        set(openapi_schema['paths'][path].keys()):
+                    openapi_schema['paths'][path]['get']['responses']['422'] = \
+                        validation_error
                 elif 'post' in openapi_schema['paths'][path].keys():
-                    openapi_schema['paths'][path]['post']['responses']['422'] = validation_error
+                    openapi_schema['paths'][path]['post']['responses']['422'] = \
+                        validation_error
 
-    for input_schema_key, input_schema_value in input_schema['components']['schemas'].items():
-        for openapi_schema_key, _ in list(openapi_schema['components']['schemas'].items()):
+    for input_schema_key, input_schema_value in \
+            input_schema['components']['schemas'].items():
+        for openapi_schema_key, _ \
+                in list(openapi_schema['components']['schemas'].items()):
             if input_schema_key == openapi_schema_key:
-                openapi_schema['components']['schemas'][openapi_schema_key] = input_schema_value
+                openapi_schema['components']['schemas'][openapi_schema_key] = \
+                    input_schema_value
             else:
-                openapi_schema['components']['schemas'][input_schema_key] = input_schema_value
+                openapi_schema['components']['schemas'][input_schema_key] = \
+                    input_schema_value
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema
