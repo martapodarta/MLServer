@@ -150,23 +150,27 @@ def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
 
     openapi_schema = get_openapi(title=input_schema['info']['title'],
                                  version=input_schema['info']['version'],
-                                 description="", openapi_version='3.0.0',
+                                 description="", openapi_version='3.0.2',
                                  routes=app.routes, )
 
-    for path in openapi_schema['paths']:
-        for input_schema_path in input_schema['paths']:
+    openapi_schema = data_merge(openapi_schema, input_schema)
 
-            if path == input_schema_path:
-                openapi_schema['paths'][path] = input_schema['paths'][input_schema_path]
 
-                # validation error
-                if set(['parameters', 'get']) == \
-                        set(openapi_schema['paths'][path].keys()):
-                    openapi_schema['paths'][path]['get']['responses']['422'] = \
-                        validation_error
-                elif 'post' in openapi_schema['paths'][path].keys():
-                    openapi_schema['paths'][path]['post']['responses']['422'] = \
-                        validation_error
+    """
+    for path, spec in input_schema['paths'].items():
+        if path in openapi_schema['paths']:
+            spec_orig = openapi_schema['paths'][path]
+            openapi_schema['paths'][path] = spec
+
+            # TODO: ask if should merge or recreate
+            # validation error
+            if {'parameters', 'get'} == \
+                    set(openapi_schema['paths'][path].keys()):
+                openapi_schema['paths'][path]['get']['responses']['422'] = \
+                    validation_error
+            elif 'post' in openapi_schema['paths'][path].keys():
+                openapi_schema['paths'][path]['post']['responses']['422'] = \
+                    validation_error
 
     for input_schema_key, input_schema_value in \
             input_schema['components']['schemas'].items():
@@ -178,6 +182,50 @@ def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
             else:
                 openapi_schema['components']['schemas'][input_schema_key] = \
                     input_schema_value
-
+    
+    """
+    print(openapi_schema)
     app.openapi_schema = openapi_schema
+
     return app.openapi_schema
+
+
+class YamlReaderError(Exception):
+    pass
+
+
+def data_merge(openapi_schema, input_schema):
+    key = None
+
+
+    if openapi_schema is None or isinstance(openapi_schema, str):
+        # border case for first run or if a is a primitive
+        #print("--------------------")
+        #print(openapi_schema)
+        openapi_schema = input_schema
+        #print(openapi_schema)
+    elif isinstance(openapi_schema, list):
+        # lists can be only appended
+        #test
+        #print("--------------------")
+        #print(openapi_schema)
+        if isinstance(input_schema, list):
+            # merge lists
+           # print('If')
+            openapi_schema.extend(input_schema)
+            #print(openapi_schema)
+        else:
+            # append to list
+            #print('Else')
+            openapi_schema.append(input_schema)
+            #print(openapi_schema)
+    elif isinstance(openapi_schema, dict):
+        # dicts must be merged
+        if isinstance(input_schema, dict):
+            for key in input_schema:
+                if key in openapi_schema:
+                    openapi_schema[key] = data_merge(openapi_schema[key], input_schema[key])
+                else:
+                    openapi_schema[key] = input_schema[key]
+
+    return openapi_schema

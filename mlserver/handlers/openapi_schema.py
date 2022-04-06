@@ -4,7 +4,6 @@ import json
 import yaml
 
 
-
 def normalize_schema(openapi_schema: Dict):
     """
     Method used to normalize namings elements of dataplane.yaml
@@ -56,11 +55,11 @@ def merge_schemas(path_1: str, path_2: str) -> Dict[str, str]:
 
     with open(path_1) as file:
         schema_1 = yaml.load(file, Loader=yaml.FullLoader)
-    schema_1 = normalize_schema(schema_1)
+    #schema_1 = normalize_schema(schema_1)
 
     with open(path_2) as file:
         schema_2 = yaml.load(file, Loader=yaml.FullLoader)
-    schema_2 = normalize_schema(schema_2)
+    #schema_2 = normalize_schema(schema_2)
 
     merged_schema = schema_1.copy()
     merged_schema['paths'].update(schema_2['paths'])
