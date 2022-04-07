@@ -137,95 +137,22 @@ def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
     model_repository.yaml files. The method takes in two parameters instance of FastAPI
     and input schema dictionary from which contents are extracted
     """
-    validation_error = {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
 
     openapi_schema = get_openapi(title=input_schema['info']['title'],
                                  version=input_schema['info']['version'],
-                                 description="", openapi_version='3.0.2',
+                                 description=input_schema['info']['description'], openapi_version=input_schema['openapi'],
                                  routes=app.routes, )
 
-    openapi_schema = data_merge(openapi_schema, input_schema)
-
-
-    """
     for path, spec in input_schema['paths'].items():
         if path in openapi_schema['paths']:
-            spec_orig = openapi_schema['paths'][path]
             openapi_schema['paths'][path] = spec
 
-            # TODO: ask if should merge or recreate
-            # validation error
-            if {'parameters', 'get'} == \
-                    set(openapi_schema['paths'][path].keys()):
-                openapi_schema['paths'][path]['get']['responses']['422'] = \
-                    validation_error
-            elif 'post' in openapi_schema['paths'][path].keys():
-                openapi_schema['paths'][path]['post']['responses']['422'] = \
-                    validation_error
+    for schema, spec in input_schema['components']['schemas'].items():
+        if schema in openapi_schema['components']['schemas']:
+            openapi_schema['components']['schemas'][schema] = spec
+        else:
+            openapi_schema['components']['schemas'][schema] = spec
 
-    for input_schema_key, input_schema_value in \
-            input_schema['components']['schemas'].items():
-        for openapi_schema_key, _ \
-                in list(openapi_schema['components']['schemas'].items()):
-            if input_schema_key == openapi_schema_key:
-                openapi_schema['components']['schemas'][openapi_schema_key] = \
-                    input_schema_value
-            else:
-                openapi_schema['components']['schemas'][input_schema_key] = \
-                    input_schema_value
-    
-    """
-    print(openapi_schema)
     app.openapi_schema = openapi_schema
 
     return app.openapi_schema
-
-
-class YamlReaderError(Exception):
-    pass
-
-
-def data_merge(openapi_schema, input_schema):
-    key = None
-
-
-    if openapi_schema is None or isinstance(openapi_schema, str):
-        # border case for first run or if a is a primitive
-        #print("--------------------")
-        #print(openapi_schema)
-        openapi_schema = input_schema
-        #print(openapi_schema)
-    elif isinstance(openapi_schema, list):
-        # lists can be only appended
-        #test
-        #print("--------------------")
-        #print(openapi_schema)
-        if isinstance(input_schema, list):
-            # merge lists
-           # print('If')
-            openapi_schema.extend(input_schema)
-            #print(openapi_schema)
-        else:
-            # append to list
-            #print('Else')
-            openapi_schema.append(input_schema)
-            #print(openapi_schema)
-    elif isinstance(openapi_schema, dict):
-        # dicts must be merged
-        if isinstance(input_schema, dict):
-            for key in input_schema:
-                if key in openapi_schema:
-                    openapi_schema[key] = data_merge(openapi_schema[key], input_schema[key])
-                else:
-                    openapi_schema[key] = input_schema[key]
-
-    return openapi_schema
