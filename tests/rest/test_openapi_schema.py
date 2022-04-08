@@ -21,7 +21,6 @@ def test_updated_dataplane(updated_schema):
     assert updated_schema['paths']['/v2/health/live']['get']['description'] == 'The “server live” API indicates if the inference server is able to receive and respond to metadata and inference requests.'
     assert updated_schema['paths']['/v2/health/live']['get']['summary'] == 'Server is Alive'
 
-
 def test_add_new_endpoint(updated_schema):
     """
     Test if a new endpoint added to dataplane.yaml file is returned by the schema
