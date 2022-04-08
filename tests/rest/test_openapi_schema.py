@@ -27,6 +27,7 @@ def test_add_new_endpoint(updated_schema):
     Test if a new endpoint added to dataplane.yaml file is returned by the schema
     """
 
+
     assert updated_schema['paths']['/v2/models/{model_name}/ready']\
            == {
       "parameters": [
