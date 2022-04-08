@@ -1,11 +1,11 @@
 import uvicorn
 
 from ..settings import Settings
-from ..handlers import DataPlane, ModelRepositoryHandlers, get_custom_handlers
+from ..handlers import DataPlane, ModelRepositoryHandlers, get_custom_handlers, merge_schemas
 from ..model import MLModel
 
 from .utils import matches
-from .app import create_app
+from .app import create_app, custom_openapi
 
 
 class _NoSignalServer(uvicorn.Server):
@@ -37,6 +37,9 @@ class RESTServer:
                 handler_method,
                 methods=[custom_handler.rest_method],
             )
+        if not self._app.openapi_schema:
+            input_schema = merge_schemas('openapi/dataplane.yaml', 'openapi/model_repository.yaml')
+            custom_openapi(self._app, input_schema)
 
     async def delete_custom_handlers(self, model: MLModel):
         handlers = get_custom_handlers(model)

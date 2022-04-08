@@ -9,12 +9,12 @@ servers: []
 paths:
   /v2/health/live:
     get:
-      summary: Server Live
+      summary: Server is Alive
       responses:
         '200':
           description: OK
       operationId: get-v2-health-live
-      description: The “server live” API indicates if the inference server is able to receive and respond to metadata and inference requests. The “server live” API can be used directly to implement the Kubernetes livenessProbe.
+      description: The “server live” API indicates if the inference server is able to receive and respond to metadata and inference requests.
   /v2/health/ready:
     get:
       summary: Server Ready
@@ -43,7 +43,28 @@ paths:
         '200':
           description: OK
       operationId: get-v2-models-$-modelName-versions-$-modelVersion-ready
-      description: The “model ready” health API indicates if a specific model is ready for inferencing. The model name and (optionally) version must be available in the URL. If a version is not provided the server may choose a version based on its own policies.
+      description: The “model ready” health API indicates if a specific model is ready for inferencing. The model name and version must be available in the URL. If a version is not provided the server may choose a version based on its own policies.
+  '/v2/models/{model_name}/ready':
+    parameters:
+      - schema:
+          type: string
+        name: model_name
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: model_version
+        in: query
+        required: False
+    get:
+      summary: Model Ready
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+      operationId: method_v2_models__model_name__ready_get
+      description: The “model ready” health API indicates if a specific model is ready for inferencing. The model name must be available in the URL. If a version is not provided the server may choose a version based on its own policies.
+
   /v2:
     get:
       summary: Server Metadata
