@@ -15,18 +15,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/repository_index_response'
+                $ref: '#/components/schemas/RepositoryIndexResponse'
       description: 'Index description'
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/repository_index_request'
-  '/v2/repository/models/${MODEL_NAME}/load':
+              $ref: '#/components/schemas/RepositoryIndexRequest'
+  '/v2/repository/models/{model_name}/load':
     parameters:
       - schema:
           type: string
-        name: MODEL_NAME
+        name: model_name
         in: path
         required: true
     post:
@@ -35,11 +35,11 @@ paths:
       responses:
         '200':
           description: OK
-  '/v2/repository/models/${MODEL_NAME}/unload':
+  '/v2/repository/models/{model_name}/unload':
     parameters:
       - schema:
           type: string
-        name: MODEL_NAME
+        name: model_name
         in: path
         required: true
     post:
@@ -50,14 +50,14 @@ paths:
           description: OK
 components:
   schemas:
-    repository_index_request:
-      title: repository_index_request
+    RepositoryIndexRequest:
+      title: RepositoryIndexRequest
       type: object
       properties:
         ready:
           type: boolean
-    repository_index_response:
-      title: repository_index_response
+    RepositoryIndexResponse:
+      title:  RepositoryIndexResponse
       type: array
       items:
         type: object
@@ -80,20 +80,20 @@ components:
           - name
           - state
           - reason
-    repository_index_error_response:
-      title: repository_index_error_response
+    RepositoryIndexErrorResponse:
+      title: RepositoryIndexErrorResponse
       type: object
       properties:
         error:
           type: string
-    repository_load_error_response:
-      title: repository_load_error_response
+    RepositoryLoadErrorResponse:
+      title: RepositoryLoadErrorResponse
       type: object
       properties:
         error:
           type: string
-    repository_unload_error_response:
-      title: repository_unload_error_response
+    RepositoryUnloadErrorResponse:
+      title: RepositoryUnloadErrorResponse
       type: object
       properties:
         error:

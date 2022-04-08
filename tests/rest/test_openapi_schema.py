@@ -10,8 +10,7 @@ def test_updated_model_repository(updated_schema):
     '/v2/repository/index' endpoint is returned by FastAPI
     """
     assert updated_schema['paths']['/v2/repository/index']['post']['summary'] == "Index"
-    assert updated_schema['paths']['/v2/repository/index']['post']['description'] == \
-        "Index description"
+    assert updated_schema['paths']['/v2/repository/index']['post']['description'] == "Index description"
 
 
 def test_updated_dataplane(updated_schema):
@@ -19,11 +18,8 @@ def test_updated_dataplane(updated_schema):
     Test if an updated summary and description for '/v2/health/live' endpoint is
     returned by FastAPI
     """
-    assert updated_schema['paths']['/v2/health/live']['get']['description'] == \
-        "The “server live” API indicates if the inference server is able " \
-        "to receive and respond to metadata and inference requests."
-    assert updated_schema['paths']['/v2/health/live']['get']['summary'] == \
-        "Server is live"
+    assert updated_schema['paths']['/v2/health/live']['get']['description'] == 'The “server live” API indicates if the inference server is able to receive and respond to metadata and inference requests.'
+    assert updated_schema['paths']['/v2/health/live']['get']['summary'] == 'Server is Alive'
 
 
 def test_add_new_endpoint(updated_schema):
@@ -33,48 +29,33 @@ def test_add_new_endpoint(updated_schema):
 
     assert updated_schema['paths']['/v2/models/{model_name}/ready']\
            == {
-      "get": {
-        "summary": "Method",
-        "operationId": "method_v2_models__model_name__ready_get",
-        "parameters": [
-          {
-            "required": True,
-            "schema": {
-              "title": "Model Name",
-              "type": "string"
-            },
-            "name": "model_name",
-            "in": "path"
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
           },
-          {
-            "required": False,
-            "schema": {
-              "title": "Model Version",
-              "type": "string"
-            },
-            "name": "model_version",
-            "in": "query"
-          }
-        ],
+          "name": "model_name",
+          "in": "path",
+          "required": True
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "model_version",
+          "in": "query",
+          "required": False
+        }
+      ],
+      "get": {
+        "summary": "Model Ready",
+        "tags": [],
         "responses": {
           "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
+            "description": "OK"
           }
-        }
+        },
+        "operationId": "method_v2_models__model_name__ready_get",
+        "description": "The “model ready” health API indicates if a specific model is ready for inferencing. The model name must be available in the URL. If a version is not provided the server may choose a version based on its own policies."
       }
     }
