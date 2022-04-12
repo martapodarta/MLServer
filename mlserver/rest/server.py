@@ -38,7 +38,8 @@ class RESTServer:
                 methods=[custom_handler.rest_method],
             )
         if not self._app.openapi_schema:
-            input_schema = merge_schemas('openapi/dataplane.yaml', 'openapi/model_repository.yaml')
+            input_schema = merge_schemas('openapi/dataplane.yaml',
+                                         'openapi/model_repository.yaml')
             custom_openapi(self._app, input_schema)
 
     async def delete_custom_handlers(self, model: MLModel):

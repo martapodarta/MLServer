@@ -140,7 +140,8 @@ def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
 
     openapi_schema = get_openapi(title=input_schema['info']['title'],
                                  version=input_schema['info']['version'],
-                                 description=input_schema['info']['description'], openapi_version=input_schema['openapi'],
+                                 description=input_schema['info']['description'],
+                                 openapi_version=input_schema['openapi'],
                                  routes=app.routes, )
 
     for path, spec in input_schema['paths'].items():
@@ -148,10 +149,7 @@ def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
             openapi_schema['paths'][path] = spec
 
     for schema, spec in input_schema['components']['schemas'].items():
-        if schema in openapi_schema['components']['schemas']:
-            openapi_schema['components']['schemas'][schema] = spec
-        else:
-            openapi_schema['components']['schemas'][schema] = spec
+        openapi_schema['components']['schemas'][schema] = spec
 
     app.openapi_schema = openapi_schema
 

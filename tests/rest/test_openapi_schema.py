@@ -9,8 +9,10 @@ def test_updated_model_repository(updated_schema):
     Test if an updated summary and description for
     '/v2/repository/index' endpoint is returned by FastAPI
     """
-    assert updated_schema['paths']['/v2/repository/index']['post']['summary'] == "Index"
-    assert updated_schema['paths']['/v2/repository/index']['post']['description'] == "Index description"
+    assert updated_schema['paths']['/v2/repository/index']['post']['summary']\
+           == "Index"
+    assert updated_schema['paths']['/v2/repository/index']['post']['description'] \
+           == "Index description"
 
 
 def test_updated_dataplane(updated_schema):
@@ -18,8 +20,11 @@ def test_updated_dataplane(updated_schema):
     Test if an updated summary and description for '/v2/health/live' endpoint is
     returned by FastAPI
     """
-    assert updated_schema['paths']['/v2/health/live']['get']['description'] == 'The “server live” API indicates if the inference server is able to receive and respond to metadata and inference requests.'
-    assert updated_schema['paths']['/v2/health/live']['get']['summary'] == 'Server is Alive'
+    assert updated_schema['paths']['/v2/health/live']['get']['description'] \
+           == 'The “server live” API indicates if the inference server is able ' \
+              'to receive and respond to metadata and inference requests.'
+    assert updated_schema['paths']['/v2/health/live']['get']['summary'] \
+           == 'Server is Alive'
 
 
 def test_add_new_endpoint(updated_schema):
@@ -56,6 +61,9 @@ def test_add_new_endpoint(updated_schema):
           }
         },
         "operationId": "method_v2_models__model_name__ready_get",
-        "description": "The “model ready” health API indicates if a specific model is ready for inferencing. The model name must be available in the URL. If a version is not provided the server may choose a version based on its own policies."
+        "description": "The “model ready” health API indicates if a specific model "
+                       "is ready for inferencing. The model name must be available "
+                       "in the URL. If a version is not provided the server may choose "
+                       "a version based on its own policies."
       }
     }
