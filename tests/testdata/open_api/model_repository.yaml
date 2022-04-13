@@ -7,7 +7,7 @@ servers: []
 paths:
   /v2/repository/index:
     post:
-      summary: ''
+      summary: 'Index'
       operationId: post-v2-repository-index
       responses:
         '200':
@@ -16,7 +16,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RepositoryIndexResponse'
-      description: ''
+      description: 'Index description'
       requestBody:
         content:
           application/json:

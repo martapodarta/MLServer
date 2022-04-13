@@ -1,15 +1,15 @@
 from typing import Callable
+from typing import Dict, Any
 from fastapi import FastAPI
 from fastapi.responses import Response as FastAPIResponse
 from fastapi.routing import APIRoute as FastAPIRoute
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from starlette_exporter import PrometheusMiddleware, handle_metrics
-
 from .endpoints import Endpoints, ModelRepositoryEndpoints
 from .requests import Request
 from .responses import Response
 from .errors import _EXCEPTION_HANDLERS
-
 from ..settings import Settings
 from ..handlers import DataPlane, ModelRepositoryHandlers
 
@@ -129,3 +129,28 @@ def create_app(
         app.add_route(settings.metrics_endpoint, handle_metrics)
 
     return app
+
+
+def custom_openapi(app: FastAPI, input_schema: Dict) -> Dict[str, Any]:
+    """
+    Method used to extend openapi schema with the contents of dataplane.yaml and
+    model_repository.yaml files. The method takes in two parameters instance of FastAPI
+    and input schema dictionary from which contents are extracted
+    """
+
+    openapi_schema = get_openapi(title=input_schema['info']['title'],
+                                 version=input_schema['info']['version'],
+                                 description=input_schema['info']['description'],
+                                 openapi_version=input_schema['openapi'],
+                                 routes=app.routes, )
+
+    for path, spec in input_schema['paths'].items():
+        if path in openapi_schema['paths']:
+            openapi_schema['paths'][path] = spec
+
+    for schema, spec in input_schema['components']['schemas'].items():
+        openapi_schema['components']['schemas'][schema] = spec
+
+    app.openapi_schema = openapi_schema
+
+    return app.openapi_schema
